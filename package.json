@@ -1,0 +1,119 @@
+{
+	"name": "swa-salesforce-extension",
+	"displayName": "Southwest Salesforce Extension",
+	"description": "Tools used by Southwest Salesforce developers using Visual Studio Code",
+	"version": "1.0.9",
+	"publisher": "SWA",
+	"engines": {
+		"vscode": "^1.48.0"
+	},
+	"categories": [
+		"Programming Languages",
+		"Other"
+	],
+	"activationEvents": [
+		"*"
+	],
+	"main": "./out/extension.js",
+	"contributes": {
+		"commands": [
+			{
+				"command": "swa.package.merge",
+				"title": "SWA: Merge Package XML"
+			},
+			{
+				"command": "swa.package.retrieve",
+				"title": "SWA: Retrieve Package"
+			},
+			{
+				"command": "swa.package.validate",
+				"title": "SWA: Validate Package"
+			},
+			{
+				"command": "swa.package.deploy",
+				"title": "SWA: Deploy Package"
+			},
+			{
+				"command": "swa.package.sync",
+				"title": "SWA: Convert to MDAPI"
+			}
+		],
+		"menus": {
+			"explorer/context": [
+				{
+					"when": "!explorerResourceIsFolder && (resourceDirname =~ /(\\/|\\\\)(manifest)$/ || resourceDirname =~ /(\\/|\\\\)(manifest)(\\/|\\\\).*$/)",
+					"command": "swa.package.merge",
+					"group": "SWA"
+				},
+				{
+					"when": "!explorerResourceIsFolder && (resourceDirname =~ /(\\/|\\\\)(manifest)$/ || resourceDirname =~ /(\\/|\\\\)(manifest)(\\/|\\\\).*$/)",
+					"command": "swa.package.retrieve",
+					"group": "SWA"
+				},
+				{
+					"when": "!explorerResourceIsFolder && (resourceDirname =~ /(\\/|\\\\)(manifest)$/ || resourceDirname =~ /(\\/|\\\\)(manifest)(\\/|\\\\).*$/)",
+					"command": "swa.package.validate",
+					"group": "SWA"
+				},
+				{
+					"when": "!explorerResourceIsFolder && (resourceDirname =~ /(\\/|\\\\)(manifest)$/ || resourceDirname =~ /(\\/|\\\\)(manifest)(\\/|\\\\).*$/)",
+					"command": "swa.package.deploy",
+					"group": "SWA"
+				},
+				{
+					"when": "!explorerResourceIsFolder && (resourceDirname =~ /(\\/|\\\\)(manifest)$/ || resourceDirname =~ /(\\/|\\\\)(manifest)(\\/|\\\\).*$/)",
+					"command": "swa.package.sync",
+					"group": "SWA"
+				}
+			]
+		}
+	},
+	"scripts": {
+		"vscode:prepublish": "npm run compile",
+		"compile": "tsc -p ./",
+		"lint": "eslint src --ext ts",
+		"watch": "tsc -watch -p ./",
+		"pretest": "npm run compile && npm run lint",
+		"test": "node ./out/test/runTest.js"
+	},
+	"dependencies": {
+		"@types/cross-spawn": "^6.0.2",
+		"deepmerge": "^4.3.1",
+		"escape-path-with-spaces": "^1.0.0",
+		"extract-zip": "2.0.1",
+		"files": "^2.2.2",
+		"ncp": "2.0.0",
+		"path-exists": "3.0.0",
+		"rxjs": "^6.6.2",
+		"shelljs": "0.8.3",
+		"simple-xml-merge": "^0.1.5",
+		"trash": "^6.1.1",
+		"tree-kill": "^1.1.0",
+		"xml2js": "^0.6.2"
+	},
+	"devDependencies": {
+		"@types/glob": "^7.1.3",
+		"@types/mocha": "^8.0.0",
+		"@types/node": "^14.0.27",
+		"@types/vscode": "^1.47.0",
+		"@typescript-eslint/eslint-plugin": "^3.10.1",
+		"@typescript-eslint/parser": "^3.10.1",
+		"eslint": "^7.7.0",
+		"eslint-config-google": "^0.14.0",
+		"eslint-config-standard": "^14.1.1",
+		"eslint-plugin-import": "^2.22.0",
+		"eslint-plugin-node": "^11.1.0",
+		"eslint-plugin-promise": "^4.2.1",
+		"eslint-plugin-react": "^7.20.6",
+		"eslint-plugin-standard": "^4.0.1",
+		"glob": "^7.1.6",
+		"mocha": "^8.1.2",
+		"vscode-test": "^1.4.0"
+	},
+	"repository": {
+		"type": "git",
+		"url": "https://github.com/mjrforce/swa-salesforce-extension"
+	},
+	"license": "BSD-3-Clause",
+	"icon": "images/swa.png"
+}
