@@ -150,14 +150,12 @@ function deployManifest (uris: Array<vscode.Uri>, dryrun: boolean, wspath: strin
       console.log('delete files');
       console.log(files);
       files.forEach(function (file:any) {
-        console.log('delete: ' + file);
-        /*
+        console.log('delete: ' + file); 
         vscode.workspace.fs.delete(utils.getUri(file)).then(function () {
           console.log('rename from temp to --> ' + file);
           vscode.workspace.fs.rename(utils.getUri(file + '.temp'), utils.getUri(file));
           outputChannel.appendLine('SWA: All Done...');
         });
-        */
       });
     });
 }
