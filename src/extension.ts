@@ -69,14 +69,9 @@ function packageRetrieve (uris: Array<vscode.Uri>) {
 }
 
 function mergeMetadataForRetrieve (manifest: any, wspath: string) {
-  console.log('get type map: ');
-  console.log(manifest);
   var typemap = utils.getTypeMap(manifest);
-  console.log(JSON.stringify(typemap));
   var mmap = utils.getMetadataMap(typemap, wspath, true);
-  console.log(JSON.stringify(mmap));
   var keys = [...mmap.keys()];
-  console.log(keys);
   var promises : any[] = [];
   for (var i = 0; i < keys.length; i++) {
     var value = mmap.get(keys[i]);
@@ -111,21 +106,17 @@ function deployManifest (uris: Array<vscode.Uri>, dryrun: boolean, wspath: strin
       var promises : any[] = [];
       outputChannel.appendLine('SWA: Creating Delta Files...');
       for (var i = 0; i < keys.length; i++) {
-        console.log('key: ' + keys[i] + ' value: ' + mmap.get(keys[i]).length);
         var value = mmap.get(keys[i]);
         promises.push(new Promise(function (resolve, reject) {
           Promise.all(value).then(function (files) {
             for (var i = 0; i < files.length; i++) {
-              console.log('files at i:' + i);
-              console.log(files[i]);
               var m = new Metadata(files[i][0].result, typemap);
               var filename = files[i][0].fileName;
               var val = m.filter();
               var builder = new xml2js.Builder();
               var xml = builder.buildObject(val);
-              resolve(vscode.workspace.fs.rename(utils.getUri(filename), utils.getUri(filename + '.temp'))
+              resolve(vscode.workspace.fs.rename(utils.getUri(filename), utils.getUri(filename.replace('-meta.xml', '.temp')))
                 .then(function () {
-                  console.log(filename);
                   return vscode.workspace.fs.writeFile(utils.getUri(filename), new TextEncoder().encode(xml))
                     .then(function () {
                       return filename;
@@ -144,20 +135,52 @@ function deployManifest (uris: Array<vscode.Uri>, dryrun: boolean, wspath: strin
       } else {
         outputChannel.appendLine('SWA: Deploying Metadata...');
       }
-      return exec(deploycmd).then(function () { return files });
+      return exec(deploycmd)
+        .then(function (results:any) { 
+          outputChannel.appendLine(results.stdout);
+          return files;
+        }).catch(function (error:any) {
+          outputChannel.appendLine('Error During Deploy....');
+          outputChannel.appendLine(error.stderr);
+          return files;
+        });
     }).then(function (files) {
-      outputChannel.appendLine('SWA: Cleaning things up...');
-      console.log('delete files');
-      console.log(files);
       files.forEach(function (file:any) {
-        console.log('delete: ' + file); 
         vscode.workspace.fs.delete(utils.getUri(file)).then(function () {
-          console.log('rename from temp to --> ' + file);
-          vscode.workspace.fs.rename(utils.getUri(file + '.temp'), utils.getUri(file));
+          vscode.workspace.fs.rename(utils.getUri(file.replace('-meta.xml', '.temp')), utils.getUri(file));
           outputChannel.appendLine('SWA: All Done...');
         });
       });
     });
+}
+
+export async function refreshItems (uris: Array<vscode.Uri>, item: string) {
+  var metadata : string = 'ApexClass ApexPage Application CustomTab CustomField CustomObject Layout RecordType DataCategoryGroup CustomMetadata CustomPermission';
+  const wspaces = utils.getRootPath();
+
+  if (wspaces) {
+    const wspath = wspaces.fsPath;
+    vscode.workspace.fs.copy(utils.getUri(wspath + '/sfdx-project.json'), utils.getUri(_home + '/sfdx-project.json'), { overwrite: true })
+      .then(function () {
+        return vscode.workspace.fs.copy(utils.getUri(wspath + '/.sfdx'), utils.getUri(_home + '/.sfdx'), { overwrite: true });
+      }).then(function () {
+        return vscode.workspace.fs.copy(utils.getUri(wspath + '/.sf'), utils.getUri(_home + '/.sf'), { overwrite: true });
+      }).then(function () {
+        for (let i = 0; i < uris.length; i++) {
+          var arr = uris[i].fsPath.split('/');
+          var fn = arr[arr.length - 1];
+          metadata += '`' + item + ':' + fn.split('.')[0] + '` ';
+        }
+        const _options = { cwd: _home };
+        return exec('sf project retrieve start --metadata ' + metadata, _options)
+          .then(function (results:any) {
+            outputChannel.appendLine(results.stdout);
+          }).catch(function (error:any) {
+            outputChannel.appendLine('Error During Retrieve....');
+            outputChannel.appendLine(error.stderr);
+          });
+      });
+  }
 }
 
 export async function convertSource (uris: Array<vscode.Uri>) {

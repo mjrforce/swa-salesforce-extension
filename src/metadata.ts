@@ -30,16 +30,13 @@ export class Metadata {
       inmap.set(key, value);
     }
     for (const [key, value] of Object.entries(this.m)) {
-      console.log(this.name + ':' + key);
       var values = value as any[];
       for (var a = 0; a < values.length; a++) {
         var ispresent: boolean = false;
         var v = (typeof values[a] === 'object') ? values[a][this.getKeyField(key)][0] : values[a];
-        console.log(this.name + ':' + key + ':' + v);
         if (this.inManifest(this.name, key, v)) {
           if (inmap.has(key)) {
             for (var i = 0; i < inmap.get(key).length; i++) {
-              console.log('inmap:' + key + ':' + JSON.stringify(inmap.get(key)[i]));
               if (typeof inmap.get(key)[i] === 'object') {
                 if (utils.isEqual(inmap.get(key)[i][this.getKeyField(key)][0], v)) {
                   ispresent = true;
@@ -67,27 +64,34 @@ export class Metadata {
     toreturn[this.name] = {};
     for (const key of inmap.keys()) {
       var val : any[] = inmap.get(key);
-      if (utils.isEqual(key, 'labels') && utils.isEqual(this.name, 'CustomLabels')) {
-        console.log('merging custom labels....');
-        console.log(typeof val);
-        console.log(val);
-        val.sort(function (a:any, b:any) {
-          var nameA = a.fullName[0].toLowerCase();
-          var nameB = b.fullName[0].toLowerCase();
-          if (nameA < nameB) {
-            return -1;
-          }
-          if (nameA > nameB) {
-            return 1;
-          }
-          return 0;
-        });
-      }
+      var keyfield = this.getKeyField(key);
+      val.sort(function (a:any, b:any) {
+        var nameA = '';
+        var nameB = '';
+
+        if (utils.isEqual(typeof a, 'object') && !utils.isEqual(keyfield, '')) {
+          nameA = a[keyfield].toLowerCase();
+        }
+        if (utils.isEqual(typeof b, 'object') && !utils.isEqual(keyfield, '')) {
+          nameB = b[keyfield].toLowerCase();
+        }
+        if (utils.isEqual(typeof a, 'string')) {
+          nameA = a.toLowerCase();
+        }
+        if (utils.isEqual(typeof b, 'string')) {
+          nameB = b.toLowerCase();
+        }
+        if (nameA < nameB) {
+          return -1;
+        }
+        if (nameA > nameB) {
+          return 1;
+        }
+        return 0;
+      });
 
       toreturn[this.name][key] = val;
     }
-    console.log('to return: ');
-    console.log(toreturn);
     return toreturn;
   }
 
@@ -101,7 +105,6 @@ export class Metadata {
       } else {
         if (keys.includes(key)) {
           for (var j = 0; j < this.typemap.get(typename)[key].length; j++) {
-            console.log(key + ':' + j + ': ' + this.typemap.get(typename)[key][j]);
             if (utils.isEqual(this.typemap.get(typename)[key][j], value)) {
               retval = true;
               break;
@@ -110,7 +113,6 @@ export class Metadata {
         }
       }
     }
-    console.log('Is ' + typename + ':' + key + ':' + value + ' In Manifest: ' + retval)
     return retval;
   }
 
@@ -136,10 +138,7 @@ export class Metadata {
     var returnval:any = {}
     returnval[this.name] = {};
     var doFilter = false;
-    console.log('keys: ' + JSON.stringify([...this.typemap.keys()]));
-    console.log('this.name --> ' + this.name);
     for (const key of Object.keys(this.typemap.get(this.name))) {
-      console.log('filter key: ' + key);
       if (!utils.isEqual(key, 'Name') && !utils.isEqual(key, 'Members')) {
         doFilter = true;
         var holder: any[] = [];
@@ -152,7 +151,6 @@ export class Metadata {
         }
       }
     }
-    console.log('do filter: ' + doFilter);
     if (!doFilter) { returnval = this.m; }
     return returnval;
   }
